@@ -2,11 +2,7 @@
 const navbar = document.getElementById('navbar');
 
 window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
-        navbar.classList.add('scrolled');
-    } else {
-        navbar.classList.remove('scrolled');
-    }
+    navbar.classList.toggle('scrolled', window.scrollY > 30);
 });
 
 // ===== Mobile Navigation Toggle =====
@@ -15,58 +11,43 @@ const navLinks = document.querySelector('.nav-links');
 
 navToggle.addEventListener('click', () => {
     navLinks.classList.toggle('active');
-    navToggle.classList.toggle('active');
 });
 
-// Close mobile menu when a link is clicked
 navLinks.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
         navLinks.classList.remove('active');
-        navToggle.classList.remove('active');
     });
 });
 
-// ===== Scroll Reveal Animation =====
-const observerOptions = {
-    threshold: 0.15,
-    rootMargin: '0px 0px -50px 0px'
-};
+// ===== Scroll Reveal =====
+const revealElements = document.querySelectorAll(
+    '.section-title, .achievement-card, .project-card, .skill-category, ' +
+    '.highlight-card, .education-card, .timeline-item, .casestudy-card, ' +
+    '.testimonial-card, .cert-card, .contact-card'
+);
 
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
+revealElements.forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(18px)';
+    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+});
+
+const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
         if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
+            setTimeout(() => {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+                entry.target.classList.add('visible');
+            }, i * 60);
+            revealObserver.unobserve(entry.target);
         }
     });
-}, observerOptions);
+}, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
 
-// Observe all section titles
-document.querySelectorAll('.section-title').forEach(title => {
-    observer.observe(title);
-});
+revealElements.forEach(el => revealObserver.observe(el));
 
-// Observe cards for staggered animation
-const cards = document.querySelectorAll('.achievement-card, .project-card, .skill-category, .highlight-card');
-cards.forEach((card, index) => {
-    card.style.opacity = '0';
-    card.style.transform = 'translateY(20px)';
-    card.style.transition = `all 0.5s ease ${index * 0.1}s`;
-});
-
-const cardObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-        }
-    });
-}, { threshold: 0.1 });
-
-cards.forEach(card => {
-    cardObserver.observe(card);
-});
-
-// ===== Smooth Scroll for CTA buttons =====
+// ===== Smooth Scroll =====
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         const href = this.getAttribute('href');
@@ -75,8 +56,28 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         if (target) {
             e.preventDefault();
             const navHeight = document.getElementById('navbar').offsetHeight;
-            const targetPosition = target.getBoundingClientRect().top + window.scrollY - navHeight - 20;
+            const targetPosition = target.getBoundingClientRect().top + window.scrollY - navHeight - 16;
             window.scrollTo({ top: targetPosition, behavior: 'smooth' });
         }
+    });
+});
+
+// ===== Tilt effect on cards =====
+const tiltCards = document.querySelectorAll('.achievement-card, .project-card, .testimonial-card');
+
+tiltCards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = (y - centerY) / 25;
+        const rotateY = (centerX - x) / 25;
+        card.style.transform = `translateY(-3px) perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = 'translateY(0) perspective(800px) rotateX(0) rotateY(0)';
     });
 });

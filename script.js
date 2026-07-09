@@ -69,10 +69,14 @@ cards.forEach(card => {
 // ===== Smooth Scroll for CTA buttons =====
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const href = this.getAttribute('href');
+        if (href === '#') return;
+        const target = document.querySelector(href);
         if (target) {
-            target.scrollIntoView({ behavior: 'smooth' });
+            e.preventDefault();
+            const navHeight = document.getElementById('navbar').offsetHeight;
+            const targetPosition = target.getBoundingClientRect().top + window.scrollY - navHeight - 20;
+            window.scrollTo({ top: targetPosition, behavior: 'smooth' });
         }
     });
 });
